@@ -1,0 +1,31 @@
+{
+  "name": "secretsdump",
+  "pyfile": "secretsdump.py",
+  "load_dependencies": [
+    "setuptools",
+    "pkg_resources",
+    "jaraco",
+    "_distutils_hack",
+    "distutils",
+    "cffi",
+    "configparser",
+    "future",
+    "chardet",
+    "flask",
+    "ldap3",
+    "ldapdomaindump",
+    "pyasn1",
+    "OpenSSL",
+    "pyreadline",
+    "six",
+    "markupsafe",
+    "werkzeug",
+    "click",
+    "itsdangerous",
+    "dns",
+    "impacket"
+  ],
+  "unpack_dependencies": ["Cryptodome"]
+}
+
+
