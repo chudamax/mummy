@@ -1,0 +1,21 @@
+{
+  "name": "lazagne",
+  "pyfile": "LaZagne.py",
+  "load_dependencies": [
+    "setuptools",
+    "pkg_resources",
+    "_distutils_hack",
+    "asn1crypto",
+    "future",
+    "lazagne",
+    "minidump",
+    "minikerberos",
+    "pyasn1",
+    "pypykatz",
+    "rsa",
+    "unicrypto"
+  ],
+  "unpack_dependencies": [ "Cryptodome" ]
+}
+
+
